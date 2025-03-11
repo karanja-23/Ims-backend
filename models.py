@@ -3,3 +3,58 @@ from sqlalchemy_serializer import SerializerMixin
 db = SQLAlchemy()
 
 
+class User(db.Model, SerializerMixin):
+    __tablename__ = 'users'
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    contact = db.Column(db.String(120), unique=True, nullable=False)
+    password = db.Column(db.String(255), nullable=False)
+    role_id = db.Column(db.Integer, db.ForeignKey('roles.id'), nullable=False)
+    role = db.relationship('Role', back_populates='users', lazy=True)
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'username': self.username,
+            'email': self.email,
+            'contact': self.contact,
+            'role': self.role.to_dict()
+        }
+
+    def __repr__(self):
+        return '<User %r>' % self.username
+    
+    
+class Role (db.Model, SerializerMixin):
+    __tablename__ = 'roles'
+    id = db.Column(db.Integer, primary_key=True)    
+    name = db.Column(db.String(80), unique=True, nullable=False)
+    permissions = db.relationship('Permission', back_populates='roles', lazy=True)
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'permissions': [permission.to_dict() for permission in self.permissions]
+        }
+    
+class role_permission(db.Model, SerializerMixin):
+    __tablename__ = 'role_permission'
+    id = db.Column(db.Integer, primary_key=True)
+    role_id = db.Column(db.Integer, db.ForeignKey('roles.id'), nullable=False)
+    permission_id = db.Column(db.Integer, db.ForeignKey('permissions.id'), nullable=False)
+    
+
+    
+class Permission(db.Model, SerializerMixin):
+    __tablename__ = 'permissions'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(80), unique=True, nullable=False)  
+    roles = db.relationship('Role', back_populates='permissions', lazy=True)  
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name
+        }

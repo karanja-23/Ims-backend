@@ -36,7 +36,7 @@ def get_users():
         db.session.commit()
         return jsonify(user.to_dict()), 201
     
-@app.route('/users/<int:user_id>', methods=['GET', 'PUT', 'DELETE', 'POST'])
+@app.route('/users/<int:user_id>', methods=['GET', 'PUT', 'DELETE'])
 def get_user(user_id):
     user = User.query.get(user_id)
     if user is None:
@@ -57,15 +57,18 @@ def get_user(user_id):
         db.session.commit()
         return jsonify({'message': 'User deleted'}), 200
 
-@app.route('/roles',methods=['POST'])
+@app.route('/roles',methods=['POST','GET'])
 def create_role():
-    data = request.get_json()
-    name = data.get('name')
-    role = Role(name=name)
-    db.session.add(role)
-    db.session.commit()
-    return jsonify(role.to_dict()), 201
-    
+    if request.method == 'POST':
+        data = request.get_json()
+        name = data.get('name')
+        role = Role(name=name)
+        db.session.add(role)
+        db.session.commit()
+        return jsonify(role.to_dict()), 201
+    elif request.method == 'GET':
+        roles = Role.query.all()
+        return jsonify([role.to_dict() for role in roles]), 200
   
 if __name__ == '__main__':
     app.run(debug=True) 

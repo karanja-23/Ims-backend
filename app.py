@@ -34,7 +34,7 @@ def get_users():
         user = User(username=username,email=email,contact=contact,password=password,role_id=role_id)
         db.session.add(user)
         db.session.commit()
-        return jsonify(user.to_dict()), 201
+        return jsonify({"message": "User created successfully"}), 201
     
 @app.route('/users/<int:user_id>', methods=['GET', 'PUT', 'DELETE'])
 def get_user(user_id):

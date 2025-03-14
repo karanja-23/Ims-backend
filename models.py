@@ -30,12 +30,14 @@ class Role(db.Model, SerializerMixin):
     __tablename__ = 'roles'
     id = db.Column(db.Integer, primary_key=True)    
     name = db.Column(db.String(80), unique=True, nullable=False)
+    description = db.Column(db.String(255), nullable=True)
     permissions = db.relationship('Permission', secondary='role_permission', back_populates='roles', lazy=True)
     users = db.relationship('User', back_populates='role', lazy=True)
     def to_dict(self):
         return {
             'id': self.id,
             'name': self.name,
+            'description': self.description,
             'permissions': [permission.to_dict() for permission in self.permissions]
         }
     

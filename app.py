@@ -71,6 +71,13 @@ def get_roles():
     roles = Role.query.all()
     return jsonify([role.to_dict() for role in roles]), 200    
     
-
+@app.route('/permissions',methods=['POST'])
+def create_permission():
+    data = request.get_json()
+    name = data.get('name')
+    permission = Permission(name=name)
+    db.session.add(permission)
+    db.session.commit()
+    return jsonify(permission.to_dict()), 201
 if __name__ == '__main__':
     app.run(debug=True) 

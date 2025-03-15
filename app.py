@@ -119,24 +119,41 @@ def get_permission(permission_id):
         db.session.commit()
         return jsonify({'message': 'Permission deleted'}), 200
     
-@app.route('/role_permission', methods=['POST'])
+@app.route('/role_permission', methods=['POST','PATCH'])
 def create_role_permissions():
-    data = request.get_json()
-    role_id = data.get('role_id')
-    permission_ids = data.get('permission_ids', [])  # Expecting a list of permission IDs
+    if request.method == 'POST':
+        data = request.get_json()
+        role_id = data.get('role_id')
+        permission_ids = data.get('permission_ids', [])  # Expecting a list of permission IDs
 
-    if not role_id or not isinstance(permission_ids, list) or not permission_ids:
-        return jsonify({"error": "Invalid input"}), 400
+        if not role_id or not isinstance(permission_ids, list) or not permission_ids:
+            return jsonify({"error": "Invalid input"}), 400
 
-    role_permissions = [
-        RolePermission(role_id=role_id, permission_id=perm_id)
-        for perm_id in permission_ids
-    ]
+        role_permissions = [
+            RolePermission(role_id=role_id, permission_id=perm_id)
+            for perm_id in permission_ids
+        ]
 
-    db.session.bulk_save_objects(role_permissions)
-    db.session.commit()
+        db.session.bulk_save_objects(role_permissions)
+        db.session.commit()
 
-    return jsonify([rp.to_dict() for rp in role_permissions]), 201
+        return jsonify([rp.to_dict() for rp in role_permissions]), 201
+    if request.method == 'PATCH':
+        data = request.get_json()
+        role_id = data.get('role_id')
+        permission_ids = data.get('permission_ids', [])  
+
+        if not role_id or not isinstance(permission_ids, list) or not permission_ids:
+            return jsonify({"error": "Invalid input"}), 400
+
+        role = Role.query.get(role_id)
+        if not role:
+            return jsonify({"error": "Role not found"}), 404
+
+        role.permissions = [Permission.query.get(perm_id) for perm_id in permission_ids]
+        db.session.commit()
+
+        return jsonify({"message": "Role permissions updated successfully"}), 200  
 
 if __name__ == '__main__':
     app.run(debug=True) 

@@ -102,5 +102,21 @@ def create_permission():
 def get_permissions():
     permissions = Permission.query.all()
     return jsonify([permission.to_dict() for permission in permissions]), 200
+@app.route('/permissions/<int:permission_id>', methods=['GET', 'PUT', 'DELETE'])
+def get_permission(permission_id):
+    permission = Permission.query.get(permission_id)
+    if permission is None:
+        return jsonify({'message': 'Permission not found'}), 404
+    if request.method == 'GET':
+        return jsonify(permission.to_dict()), 200
+    if request.method == 'PUT':
+        data = request.get_json()
+        permission.name = data.get('name', permission.name)
+        db.session.commit()
+        return jsonify(permission.to_dict()), 200
+    if request.method == 'DELETE':
+        db.session.delete(permission)
+        db.session.commit()
+        return jsonify({'message': 'Permission deleted'}), 200
 if __name__ == '__main__':
     app.run(debug=True) 

@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, request
-from models import db,User,Role,Permission
+from models import db,User,Role,Permission,RolePermission
 from flask_migrate import Migrate
 from dotenv import load_dotenv
 from flask_cors import CORS
@@ -118,5 +118,25 @@ def get_permission(permission_id):
         db.session.delete(permission)
         db.session.commit()
         return jsonify({'message': 'Permission deleted'}), 200
+    
+@app.route('/role_permission', methods=['POST'])
+def create_role_permissions():
+    data = request.get_json()
+    role_id = data.get('role_id')
+    permission_ids = data.get('permission_ids', [])  # Expecting a list of permission IDs
+
+    if not role_id or not isinstance(permission_ids, list) or not permission_ids:
+        return jsonify({"error": "Invalid input"}), 400
+
+    role_permissions = [
+        RolePermission(role_id=role_id, permission_id=perm_id)
+        for perm_id in permission_ids
+    ]
+
+    db.session.bulk_save_objects(role_permissions)
+    db.session.commit()
+
+    return jsonify([rp.to_dict() for rp in role_permissions]), 201
+
 if __name__ == '__main__':
     app.run(debug=True) 

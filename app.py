@@ -66,6 +66,25 @@ def create_role():
     db.session.commit()
     return jsonify(role.to_dict()), 201
 
+@app.route('/roles/<int:role_id>', methods=['GET', 'PUT', 'DELETE'])
+def get_role(role_id):
+    role = Role.query.get(role_id)
+    if role is None:
+        return jsonify({'message': 'Role not found'}), 404
+    if request.method == 'GET':
+        return jsonify(role.to_dict()), 200
+    if request.method == 'PUT':
+        data = request.get_json()
+        role.name = data.get('name', role.name)
+        role.description = data.get('description', role.description)
+      
+        db.session.commit()
+        return jsonify(role.to_dict()), 200
+    if request.method == 'DELETE':
+        db.session.delete(role)
+        db.session.commit()
+        return jsonify({'message': 'Role deleted'}), 200
+
 @app.route('/roles/all', methods=['GET'])
 def get_roles():
     roles = Role.query.all()
@@ -79,5 +98,9 @@ def create_permission():
     db.session.add(permission)
     db.session.commit()
     return jsonify(permission.to_dict()), 201
+@app.route('/permissions/all', methods=['GET'])
+def get_permissions():
+    permissions = Permission.query.all()
+    return jsonify([permission.to_dict() for permission in permissions]), 200
 if __name__ == '__main__':
     app.run(debug=True) 

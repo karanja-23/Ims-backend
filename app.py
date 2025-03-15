@@ -166,7 +166,7 @@ def create_space():
     db.session.commit()
     return jsonify({"message": "Space created successfully"}), 201
 
-@app.route('spaces/all', methods=['GET'])
+@app.route('/spaces/all', methods=['GET'])
 def get_spaces():
     spaces = Space.query.all()
     return jsonify([space.to_dict() for space in spaces]), 200

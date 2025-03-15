@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, request
-from models import db,User,Role,Permission,RolePermission
+from models import db,User,Role,Permission,RolePermission,Space
 from flask_migrate import Migrate
 from dotenv import load_dotenv
 from flask_cors import CORS
@@ -154,6 +154,21 @@ def create_role_permissions():
         db.session.commit()
 
         return jsonify({"message": "Role permissions updated successfully"}), 200  
+    
+@app.route('/spaces',methods=['POST'])
+def create_space():
+    data = request.get_json()
+    name = data.get('name')
+    description = data.get('description')
+    location = data.get('location')
+    space = Space(name=name,description=description,location=location)
+    db.session.add(space)
+    db.session.commit()
+    return jsonify({"message": "Space created successfully"}), 201
 
+@app.route('spaces/all', methods=['GET'])
+def get_spaces():
+    spaces = Space.query.all()
+    return jsonify([space.to_dict() for space in spaces]), 200
 if __name__ == '__main__':
     app.run(debug=True) 

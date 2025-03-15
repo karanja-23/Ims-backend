@@ -60,3 +60,11 @@ class Permission(db.Model, SerializerMixin):
             'id': self.id,
             'name': self.name
         }
+        
+class Space(db.Model, SerializerMixin):
+    __tablename__ = 'spaces'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(80), unique=True, nullable=False)
+    description = db.Column(db.String(255), nullable=True)
+    location = db.Column(db.String(255), nullable=True)
+    status = db.Column(db.String(255),default='active', nullable=False)  

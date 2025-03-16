@@ -177,6 +177,7 @@ def get_space(space_id):
         space.name = data.get('name', space.name)
         space.description = data.get('description', space.description)
         space.location = data.get('location', space.location)
+        space.status = data.get('status', space.status)
         db.session.commit()
         return jsonify({'message': 'Space updated'}), 200
     if request.method == 'DELETE':

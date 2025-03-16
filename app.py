@@ -165,7 +165,24 @@ def create_space():
     db.session.add(space)
     db.session.commit()
     return jsonify({"message": "Space created successfully"}), 201
-
+@app.route('/spaces/<int:space_id>', methods=['GET', 'PUT', 'DELETE'])
+def get_space(space_id):
+    space = Space.query.get(space_id)
+    if space is None:
+        return jsonify({'message': 'Space not found'}), 404
+    if request.method == 'GET':
+        return jsonify(space.to_dict()), 200
+    if request.method == 'PUT':
+        data = request.get_json()
+        space.name = data.get('name', space.name)
+        space.description = data.get('description', space.description)
+        space.location = data.get('location', space.location)
+        db.session.commit()
+        return jsonify({'message': 'Space updated'}), 200
+    if request.method == 'DELETE':
+        db.session.delete(space)
+        db.session.commit()
+        return jsonify({'message': 'Space deleted'}), 200
 @app.route('/spaces/all', methods=['GET'])
 def get_spaces():
     spaces = Space.query.all()

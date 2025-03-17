@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, request
-from models import db,User,Role,Permission,RolePermission,Space,Vendors
+from models import db,User,Role,Permission,RolePermission,Space,Vendors,FixedAssets,Orders
 from flask_migrate import Migrate
 from dotenv import load_dotenv
 from flask_cors import CORS
@@ -234,7 +234,103 @@ def create_vendor():
         vendors = Vendors.query.all()
         return jsonify([vendor.to_dict() for vendor in vendors]), 200
 
+@app.route('/fixed-assets', methods=['POST', 'GET'])
+def fixed_assets():
+    if request.method == 'POST':
+        data = request.get_json()
+        asset = FixedAssets(
+            asset_name=data.get('asset_name'),
+            serial_number=data.get('serial_number'),
+            quantity=data.get('quantity', 1),  # Default quantity is 1
+            vendor=data.get('vendor'),
+            purchase_price=data.get('purchase_price'),
+            date_of_purchase=data.get('date_of_purchase'),
+            physical_location=data.get('physical_location'),
+            department_owner=data.get('department_owner'),
+            depreciation_rate=data.get('depreciation_rate'),
+            depreciation_start_date=data.get('depreciation_start_date')
+        )
+        db.session.add(asset)
+        db.session.commit()
+        return jsonify({"message": "Fixed asset created successfully"}), 201
 
+    if request.method == 'GET':
+        assets = FixedAssets.query.all()
+        return jsonify([asset.to_dict() for asset in assets]), 200
+
+@app.route('/fixed-assets/<int:asset_id>', methods=['GET', 'PUT', 'DELETE'])
+def fixed_asset(asset_id):
+    asset = FixedAssets.query.get(asset_id)
+    if asset is None:
+        return jsonify({'message': 'Fixed asset not found'}), 404
+
+    if request.method == 'GET':
+        return jsonify(asset.to_dict()), 200
+
+    if request.method == 'PUT':
+        data = request.get_json()
+        asset.asset_name = data.get('asset_name', asset.asset_name)
+        asset.serial_number = data.get('serial_number', asset.serial_number)
+        asset.quantity = data.get('quantity', asset.quantity)
+        asset.vendor = data.get('vendor', asset.vendor)
+        asset.purchase_price = data.get('purchase_price', asset.purchase_price)
+        asset.date_of_purchase = data.get('date_of_purchase', asset.date_of_purchase)
+        asset.physical_location = data.get('physical_location', asset.physical_location)
+        asset.department_owner = data.get('department_owner', asset.department_owner)
+        asset.depreciation_rate = data.get('depreciation_rate', asset.depreciation_rate)
+        asset.depreciation_start_date = data.get('depreciation_start_date', asset.depreciation_start_date)
+        db.session.commit()
+        return jsonify({"message": "Fixed asset updated successfully"}), 200
+
+    if request.method == 'DELETE':
+        db.session.delete(asset)
+        db.session.commit()
+        return jsonify({"message": "Fixed asset deleted successfully"}), 200
+
+@app.route('/orders', methods=['POST', 'GET'])
+def orders():
+    if request.method == 'POST':
+        data = request.get_json()
+        order = Orders(
+            order_number=data.get('order_number'),
+            status=data.get('status'),
+            total=data.get('total'),
+            receiving_date=data.get('receiving_date'),
+            is_paid=data.get('is_paid', False),  # Default is_paid is False
+            sent=data.get('sent', 0)  # Default sent is 0
+        )
+        db.session.add(order)
+        db.session.commit()
+        return jsonify({"message": "Order created successfully"}), 201
+
+    if request.method == 'GET':
+        orders = Orders.query.all()
+        return jsonify([order.to_dict() for order in orders]), 200
+
+@app.route('/orders/<int:order_id>', methods=['GET', 'PUT', 'DELETE'])
+def order(order_id):
+    order = Orders.query.get(order_id)
+    if order is None:
+        return jsonify({'message': 'Order not found'}), 404
+
+    if request.method == 'GET':
+        return jsonify(order.to_dict()), 200
+
+    if request.method == 'PUT':
+        data = request.get_json()
+        order.order_number = data.get('order_number', order.order_number)
+        order.status = data.get('status', order.status)
+        order.total = data.get('total', order.total)
+        order.receiving_date = data.get('receiving_date', order.receiving_date)
+        order.is_paid = data.get('is_paid', order.is_paid)
+        order.sent = data.get('sent', order.sent)
+        db.session.commit()
+        return jsonify({"message": "Order updated successfully"}), 200
+
+    if request.method == 'DELETE':
+        db.session.delete(order)
+        db.session.commit()
+        return jsonify({"message": "Order deleted successfully"}), 200
 
 if __name__ == '__main__':
     app.run(debug=True) 

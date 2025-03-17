@@ -99,7 +99,7 @@ class FixedAssets(db.Model, SerializerMixin):
     purchase_price = db.Column(db.Numeric(8, 2), nullable=False)
     date_of_purchase = db.Column(db.Date, nullable=False)
     physical_location = db.Column(db.String(255), nullable=False)
-    department_owner = db.Column(db.String(255), nullable=False)
+    department_owner = db.Column(db.String(255), nullable=False) 
     depreciation_rate = db.Column(db.Numeric(8, 2), nullable=False)
     depreciation_start_date = db.Column(db.Date, nullable=False)
     created_at = db.Column(db.TIMESTAMP, server_default=db.func.current_timestamp())

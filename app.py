@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, request
-from models import db,User,Role,Permission,RolePermission,Space
+from models import db,User,Role,Permission,RolePermission,Space,Vendors
 from flask_migrate import Migrate
 from dotenv import load_dotenv
 from flask_cors import CORS
@@ -188,5 +188,53 @@ def get_space(space_id):
 def get_spaces():
     spaces = Space.query.all()
     return jsonify([space.to_dict() for space in spaces]), 200
+
+@app.route('/vendors',methods=['POST','GET'])
+def create_vendor():
+    if request.method == 'POST':
+        data = request.get_json()
+        name = data.get('name')
+        email = data.get('email')
+        contact = data.get('contact')
+        kra_pin = data.get('kra_pin')
+        address = data.get('address')
+        postal_code = data.get('postal_code')
+        city = data.get('city')
+        bank_name = data.get('bank_name')
+        account_number = data.get('account_number')
+        country = data.get('country')
+        paybill_number = data.get('paybill_number')
+        till_number = data.get('till_number')
+        contact_person_name = data.get('contact_person_name')
+        contact_person_email = data.get('contact_person_email')
+        contact_person_contact = data.get('contact_person_contact')
+    
+        vendor = Vendors(
+            name=name,
+            email=email,
+            contact=contact,
+            kra_pin=kra_pin,
+            address=address,
+            postal_code=postal_code,
+            city=city,
+            country=country,
+            bank_name=bank_name,
+            account_number=account_number,
+            paybill_number=paybill_number,
+            till_number=till_number,
+            contact_person_name=contact_person_name,
+            contact_person_email=contact_person_email,
+            contact_person_contact=contact_person_contact
+        )        
+           
+        db.session.add(vendor)
+        db.session.commit()
+        return jsonify({"message": "Vendor created successfully"}), 201
+    if request.method == 'GET':
+        vendors = Vendors.query.all()
+        return jsonify([vendor.to_dict() for vendor in vendors]), 200
+
+
+
 if __name__ == '__main__':
     app.run(debug=True) 

@@ -67,4 +67,26 @@ class Space(db.Model, SerializerMixin):
     name = db.Column(db.String(80), unique=True, nullable=False)
     description = db.Column(db.String(255), nullable=True)
     location = db.Column(db.String(255), nullable=True)
-    status = db.Column(db.String(255),default='active', nullable=False)  
+    status = db.Column(db.String(255),default='active', nullable=False)
+    
+    
+class Vendors(db.Model, SerializerMixin):
+    __tablename__ = 'vendors'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(80), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    contact = db.Column(db.String(120), unique=True, nullable=False)
+    kra_pin = db.Column(db.String(120), unique=True, nullable=False)
+    address = db.Column(db.String(255), nullable=True)
+    postal_code = db.Column(db.String(255), nullable=True)
+    city = db.Column(db.String(255), nullable=True)
+    country = db.Column(db.String(255), nullable=True)
+    bank_name = db.Column(db.String(255), nullable=True)
+    account_number = db.Column(db.String(255), nullable=True)
+    paybill_number = db.Column(db.String(255), nullable=True)
+    till_number = db.Column(db.String(255), nullable=True)  
+    contact_person_name = db.Column(db.String(255), nullable=True)
+    contact_person_email = db.Column(db.String(255), nullable=True)
+    contact_person_contact = db.Column(db.String(255), nullable=True)
+    
+    

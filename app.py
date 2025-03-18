@@ -261,6 +261,37 @@ def create_vendor():
         vendors = Vendors.query.all()
         return jsonify([vendor.to_dict() for vendor in vendors]), 200
 
+@app.route('/vendors/<int:vendor_id>', methods=['GET', 'PUT', 'DELETE'])
+def get_vendor(vendor_id):
+    vendor = Vendors.query.get(vendor_id)
+    if vendor is None:
+        return jsonify({'message': 'Vendor not found'}), 404
+    if request.method == 'GET':
+        return jsonify(vendor.to_dict()), 200
+    if request.method == 'PUT':
+        data = request.get_json()
+        vendor.name = data.get('name', vendor.name)
+        vendor.email = data.get('email', vendor.email)
+        vendor.contact = data.get('contact', vendor.contact)
+        vendor.kra_pin = data.get('kra_pin', vendor.kra_pin)
+        vendor.address = data.get('address', vendor.address)
+        vendor.postal_code = data.get('postal_code', vendor.postal_code)
+        vendor.city = data.get('city', vendor.city)
+        vendor.country = data.get('country', vendor.country)
+        vendor.bank_name = data.get('bank_name', vendor.bank_name)
+        vendor.account_name = data.get('account_name', vendor.account_name)
+        vendor.account_number = data.get('account_number', vendor.account_number)
+        vendor.paybill_number = data.get('paybill_number', vendor.paybill_number)
+        vendor.till_number = data.get('till_number', vendor.till_number)
+        vendor.contact_person_name = data.get('contact_person_name', vendor.contact_person_name)
+        vendor.contact_person_email = data.get('contact_person_email', vendor.contact_person_email)
+        vendor.contact_person_contact = data.get('contact_person_contact', vendor.contact_person_contact)
+        db.session.commit()
+        return jsonify({'message': 'Vendor updated'}), 200
+    if request.method == 'DELETE':
+        db.session.delete(vendor)
+        db.session.commit()
+        return jsonify({'message': 'Vendor deleted'}), 200
 
 
 if __name__ == '__main__':

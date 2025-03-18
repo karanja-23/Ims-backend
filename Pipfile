@@ -12,6 +12,7 @@ flask-cors = "*"
 flask-dotenv = "*"
 python-dotenv = "*"
 psycopg2-binary = "*"
+flask-jwt-extended = "*"
 
 [dev-packages]
 

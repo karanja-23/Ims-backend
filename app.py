@@ -4,6 +4,9 @@ from flask_migrate import Migrate
 from dotenv import load_dotenv
 from flask_cors import CORS
 import os
+from flask_jwt_extended import (
+    JWTManager, create_access_token, jwt_required, get_jwt_identity
+)
 
 load_dotenv()
 app = Flask(__name__)
@@ -11,14 +14,36 @@ CORS(app)
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URI')
-
+app.config ['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
 db.init_app(app)
 migrate = Migrate(app, db)
+jwt = JWTManager(app)
 
 @app.route('/', methods=['GET'])
 def index():
     return (jsonify({'message': 'Welcome to Moringa IMS API'}), 200)
-
+@app.route('/login')
+def login():
+    data = request.get_json()
+    email = data.get('email')
+    password = data.get('password')
+    
+    user = User.query.filter_by(email=email).first()
+    if not user or user.password != password:
+        return jsonify({"error": "Invalid email or password"}), 401
+    
+    access_token = create_access_token(identity=str(user.email))
+    return jsonify({"access_token": access_token}),200
+ 
+@app.route("/protected/user", methods=["GET"])
+@jwt_required()
+def protected_user():
+    current_user_email = get_jwt_identity()
+    user = User.query.filter_by(email=current_user_email).first()
+    if user is None:
+        return jsonify({'message': 'User not found'}), 404
+    else:
+        return jsonify(user.to_dict()), 200    
 @app.route('/users',methods=['GET','POST'])
 def get_users():
     if request.method == 'GET':

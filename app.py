@@ -226,6 +226,7 @@ def create_vendor():
         postal_code = data.get('postal_code')
         city = data.get('city')
         bank_name = data.get('bank_name')
+        account_name = data.get('account_name')
         account_number = data.get('account_number')
         country = data.get('country')
         paybill_number = data.get('paybill_number')
@@ -244,6 +245,7 @@ def create_vendor():
             city=city,
             country=country,
             bank_name=bank_name,
+            account_name= account_name,
             account_number=account_number,
             paybill_number=paybill_number,
             till_number=till_number,

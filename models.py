@@ -82,6 +82,7 @@ class Vendors(db.Model, SerializerMixin):
     city = db.Column(db.String(255), nullable=True)
     country = db.Column(db.String(255), nullable=True)
     bank_name = db.Column(db.String(255), nullable=True)
+    account_name = db.Column(db.String(255), nullable=True)
     account_number = db.Column(db.String(255), nullable=True)
     paybill_number = db.Column(db.String(255), nullable=True)
     till_number = db.Column(db.String(255), nullable=True)  

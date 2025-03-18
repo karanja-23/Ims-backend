@@ -22,7 +22,7 @@ jwt = JWTManager(app)
 @app.route('/', methods=['GET'])
 def index():
     return (jsonify({'message': 'Welcome to Moringa IMS API'}), 200)
-@app.route('/login')
+@app.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
     email = data.get('email')

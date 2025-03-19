@@ -340,7 +340,6 @@ def get_asset(asset_id):
         asset.name = data.get('name', asset.name)
         asset.purchase_date = data.get('purchase_date', asset.purchase_date)
         asset.purchase_cost = data.get('purchase_cost', asset.purchase_cost)
-        asset.location = data.get('location', asset.location)
         asset.description = data.get('description', asset.description)
         asset.serial_number = data.get('serial_number', asset.serial_number)
         asset.assign_id = data.get('assign_id', asset.assign_id)

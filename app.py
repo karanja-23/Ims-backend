@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, request
-from models import db,User,Role,Permission,RolePermission,Space,Vendors
+from models import db,User,Role,Permission,RolePermission,Space,Vendors,FixedAssets, Category, FixedAssetHistory
 from flask_migrate import Migrate
 from dotenv import load_dotenv
 from flask_cors import CORS
@@ -292,7 +292,98 @@ def get_vendor(vendor_id):
         db.session.delete(vendor)
         db.session.commit()
         return jsonify({'message': 'Vendor deleted'}), 200
+    
+@app.route('/assets',methods=['POST','GET'])
+def create_asset():
+    if request.method == 'POST':
+        data = request.get_json()
+        name = data.get('name')
+        purchase_date = data.get('purchase_date')
+        purchase_cost = data.get('purchase_cost')
+        description = data.get('description')
+        serial_number = data.get('serial_number')
+        assign_id = data.get('assign_id')
+        status = data.get('status')
+        space_id = data.get('space_id')
+        vendor_id = data.get('vendor_id')
+        category_id = data.get('category_id')
+        
+        asset = FixedAssets(
+            name=name,
+            purchase_date=purchase_date,
+            purchase_cost=purchase_cost,
+            description=description,
+            serial_number=serial_number,
+            assign_id=assign_id,
+            status=status,
+            space_id=space_id,
+            vendor_id=vendor_id,
+            category_id=category_id
+        )       
+                
+        db.session.add(asset)
+        db.session.commit()
+        return jsonify({"message": "Fixed asset created successfully"}), 201
+    if request.method == 'GET':
+        assets = FixedAssets.query.all()
+        return jsonify([asset.to_dict() for asset in assets]), 200
 
+@app.route('/assets/<int:asset_id>', methods=['GET', 'PUT', 'DELETE'])
+def get_asset(asset_id):
+    asset = FixedAssets.query.get(asset_id)
+    if asset is None:
+        return jsonify({'message': 'Asset not found'}), 404
+    if request.method == 'GET':
+        return jsonify(asset.to_dict()), 200
+    if request.method == 'PUT':
+        data = request.get_json()
+        asset.name = data.get('name', asset.name)
+        asset.purchase_date = data.get('purchase_date', asset.purchase_date)
+        asset.purchase_cost = data.get('purchase_cost', asset.purchase_cost)
+        asset.location = data.get('location', asset.location)
+        asset.description = data.get('description', asset.description)
+        asset.serial_number = data.get('serial_number', asset.serial_number)
+        asset.assign_id = data.get('assign_id', asset.assign_id)
+        asset.status = data.get('status', asset.status)
+        asset.space_id = data.get('space_id', asset.space_id)
+        asset.vendor_id = data.get('vendor_id', asset.vendor_id)
+        asset.category_id = data.get('category_id', asset.category_id)
+        db.session.commit()
+        return jsonify({'message': 'Asset updated'}), 200
+    if request.method == 'DELETE':
+        db.session.delete(asset)
+        db.session.commit()
+        return jsonify({'message': 'Asset deleted'}), 200
+
+@app.route('/categories',methods=['POST','GET'])
+def create_category():
+    if request.method == 'POST':
+        data = request.get_json()
+        name = data.get('name')
+        category = Category(name=name)
+        db.session.add(category)
+        db.session.commit()
+        return jsonify({"message": "Category created successfully"}), 201
+    if request.method == 'GET':
+        categories = Category.query.all()
+        return jsonify([category.to_dict() for category in categories]), 200
+
+@app.route('/categories/<int:category_id>', methods=['GET', 'PUT', 'DELETE'])
+def get_category(category_id):
+    category = Category.query.get(category_id)
+    if category is None:
+        return jsonify({'message': 'Category not found'}), 404
+    if request.method == 'GET':
+        return jsonify(category.to_dict()), 200
+    if request.method == 'PUT':
+        data = request.get_json()
+        category.name = data.get('name', category.name)
+        db.session.commit()
+        return jsonify(category.to_dict()), 200
+    if request.method == 'DELETE':
+        db.session.delete(category)
+        db.session.commit()
+        return jsonify({'message': 'Category deleted'}), 200
 
 if __name__ == '__main__':
     app.run(debug=True) 

@@ -1,6 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy_serializer import SerializerMixin
 db = SQLAlchemy()
+import datetime
 
 
 class User(db.Model, SerializerMixin):
@@ -12,14 +13,16 @@ class User(db.Model, SerializerMixin):
     password = db.Column(db.String(255), nullable=False)
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'), nullable=False)
     role = db.relationship('Role', back_populates='users', lazy=True)
-    
+    fixed_assets = db.relationship('FixedAssets', back_populates='assign', lazy=True)
+    history= db.relationship('FixedAssetHistory', back_populates='user', lazy=True)
     def to_dict(self):
         return {
             'id': self.id,
             'username': self.username,
             'email': self.email,
             'contact': self.contact,
-            'role': self.role.to_dict()
+            'role': self.role.to_dict(),
+            'fixed_assets': [{'id': asset.id, 'name': asset.name} for asset in self.fixed_assets]
         }
 
     def __repr__(self):
@@ -68,6 +71,16 @@ class Space(db.Model, SerializerMixin):
     description = db.Column(db.String(255), nullable=True)
     location = db.Column(db.String(255), nullable=True)
     status = db.Column(db.String(255),default='active', nullable=False)
+    fixed_assets = db.relationship('FixedAssets', back_populates='space', lazy=True)
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'description': self.description,
+            'location': self.location,
+            'status': self.status,
+            'fixed_assets': [fixed_asset.to_dict() for fixed_asset in self.fixed_assets]
+        }
     
     
 class Vendors(db.Model, SerializerMixin):
@@ -89,5 +102,108 @@ class Vendors(db.Model, SerializerMixin):
     contact_person_name = db.Column(db.String(255), nullable=True)
     contact_person_email = db.Column(db.String(255), nullable=True)
     contact_person_contact = db.Column(db.String(255), nullable=True)
+    fixed_assets = db.relationship('FixedAssets', back_populates='vendor', lazy=True)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'email': self.email,
+            'contact': self.contact,
+            'kra_pin': self.kra_pin,
+            'address': self.address,
+            'postal_code': self.postal_code,
+            'city': self.city,
+            'country': self.country,
+            'bank_name': self.bank_name,
+            'account_name': self.account_name,
+            'account_number': self.account_number,
+            'paybill_number': self.paybill_number,
+            'till_number': self.till_number,
+            'contact_person_name': self.contact_person_name,
+            'contact_person_email': self.contact_person_email,
+            'contact_person_contact': self.contact_person_contact,
+            'fixed_assets': [fixed_asset.to_dict() for fixed_asset in self.fixed_assets]
+        }
     
+class Category(db.Model, SerializerMixin):    
+    __tablename__ = 'categories'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(80), unique=True, nullable=False)
+    fixed_assets = db.relationship('FixedAssets', back_populates='category', lazy=True)
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'fixed_assets': [fixed_asset.to_dict() for fixed_asset in self.fixed_assets]
+        }
+    
+class FixedAssets(db.Model, SerializerMixin):
+    __tablename__ = 'fixed_assets'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(80), unique=False, nullable=False)
+    purchase_date = db.Column(db.Date(), unique=False, nullable=False)
+    purchase_cost = db.Column(db.String(80), unique=False, nullable=False)
+    description = db.Column(db.String(255), nullable=True)
+    serial_number = db.Column(db.String(255), nullable=True)    
+    assign_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    assign = db.relationship('User', back_populates='fixed_assets', lazy=True)
+    status = db.Column(db.String(255),default='active', nullable=False)
+    space_id = db.Column(db.Integer, db.ForeignKey('spaces.id'), nullable=True)
+    space = db.relationship('Space', back_populates='fixed_assets', lazy=True)
+    vendor_id = db.Column(db.Integer, db.ForeignKey('vendors.id'), nullable=True)
+    vendor = db.relationship('Vendors', back_populates='fixed_assets', lazy=True)
+    category_id = db.Column(db.Integer, db.ForeignKey('categories.id'), nullable=False)
+    category = db.relationship('Category', back_populates='fixed_assets', lazy=True)
+    history = db.relationship('FixedAssetHistory', back_populates='asset', lazy=True)
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'purchase_date': self.purchase_date,
+            'purchase_cost': self.purchase_cost,
+            'description': self.description,
+            'serial_number': self.serial_number,
+            'assign': self.assign.to_dict(),
+            'status': self.status,
+            'space': {'id': self.space.id, 'name': self.space.name} if self.space else None,
+            'vendor': {'id': self.vendor.id, 'name': self.vendor.name} if self.vendor else None,
+            'category': {'id': self.category.id, 'name': self.category.name} if self.category else None,
+            
+        }
+        
+    def update_status(self, new_status, user_id=None):
+        """Update asset status and create a history log."""
+        history_entry = FixedAssetHistory(
+            fixed_asset_id=self.id,
+            status=new_status,
+            assigned_to=user_id,
+            date=datetime.date.today()
+        )
+        db.session.add(history_entry)
+        self.status = new_status  # Update the asset's current status
+        db.session.commit()    
+    
+class FixedAssetHistory(db.Model, SerializerMixin):
+    __tablename__ = 'fixed_asset_history'
+    id = db.Column(db.Integer, primary_key=True)
+    fixed_asset_id = db.Column(db.Integer, db.ForeignKey('fixed_assets.id'), nullable=False)
+    status = db.Column(db.String(255), nullable=False)
+    assigned_to = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    date = db.Column(db.Date(), unique=False, nullable=False)
+    asset= db.relationship('FixedAssets', back_populates='history', lazy=True)
+    user= db.relationship('User', back_populates='history', lazy=True)
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'fixed_asset_id': self.fixed_asset_id,
+            'status': self.status,
+            'assigned_to': self.assigned_to,
+            'date': self.date.isoformat(),
+            'asset': self.asset.to_dict(),
+            'user': self.user.to_dict()
+        }
     

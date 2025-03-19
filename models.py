@@ -136,7 +136,7 @@ class Category(db.Model, SerializerMixin):
         return {
             'id': self.id,
             'name': self.name,
-            'fixed_assets': [fixed_asset.to_dict() for fixed_asset in self.fixed_assets]
+            
         }
     
 class FixedAssets(db.Model, SerializerMixin):
@@ -166,7 +166,7 @@ class FixedAssets(db.Model, SerializerMixin):
             'purchase_cost': self.purchase_cost,
             'description': self.description,
             'serial_number': self.serial_number,
-            'assign': self.assign.to_dict(),
+            'assign': self.assign.to_dict() if self.assign else None,
             'status': self.status,
             'space': {'id': self.space.id, 'name': self.space.name} if self.space else None,
             'vendor': {'id': self.vendor.id, 'name': self.vendor.name} if self.vendor else None,

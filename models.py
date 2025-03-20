@@ -22,6 +22,7 @@ class User(db.Model, SerializerMixin):
             'email': self.email,
             'contact': self.contact,
             'role': self.role.to_dict(),
+            'history': [history.to_dict() for history in self.history],
             'fixed_assets': [{'id': asset.id, 'name': asset.name} for asset in self.fixed_assets]
         }
 
@@ -171,7 +172,7 @@ class FixedAssets(db.Model, SerializerMixin):
             'space': {'id': self.space.id, 'name': self.space.name} if self.space else None,
             'vendor': {'id': self.vendor.id, 'name': self.vendor.name} if self.vendor else None,
             'category': {'id': self.category.id, 'name': self.category.name} if self.category else None,
-            
+            'history': [history.to_dict() for history in self.history]
         }
         
     def update_status(self, new_status, user_id=None):
@@ -202,8 +203,7 @@ class FixedAssetHistory(db.Model, SerializerMixin):
             'fixed_asset_id': self.fixed_asset_id,
             'status': self.status,
             'assigned_to': self.assigned_to,
-            'date': self.date.isoformat(),
-            'asset': self.asset.to_dict(),
-            'user': self.user.to_dict()
+            'date': self.date.isoformat(),            
+            
         }
     

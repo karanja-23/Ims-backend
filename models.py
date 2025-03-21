@@ -184,7 +184,7 @@ class FixedAssets(db.Model, SerializerMixin):
             date=datetime.date.today()
         )
         db.session.add(history_entry)
-        self.status = new_status  # Update the asset's current status
+        self.status = new_status  
         db.session.commit()    
     
 class FixedAssetHistory(db.Model, SerializerMixin):
@@ -202,7 +202,7 @@ class FixedAssetHistory(db.Model, SerializerMixin):
             'id': self.id,
             'fixed_asset_id': self.fixed_asset_id,
             'status': self.status,
-            'assigned_to': self.assigned_to,
+            'assigned_to': {'username': self.user.username} if self.user else None,
             'date': self.date.isoformat(),            
             
         }

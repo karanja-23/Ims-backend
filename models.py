@@ -202,6 +202,7 @@ class FixedAssetHistory(db.Model, SerializerMixin):
             'id': self.id,
             'fixed_asset_id': self.fixed_asset_id,
             'status': self.status,
+             'asset': {'id': self.asset.id, 'name': self.asset.name, 'serial_number': self.asset.serial_number} if self.asset else None,
             'assigned_to': {'username': self.user.username} if self.user else None,
             'date': self.date.isoformat(),            
             

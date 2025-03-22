@@ -2,6 +2,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy_serializer import SerializerMixin
 db = SQLAlchemy()
 import datetime
+from datetime import date
 
 
 class User(db.Model, SerializerMixin):
@@ -73,6 +74,8 @@ class Space(db.Model, SerializerMixin):
     location = db.Column(db.String(255), nullable=True)
     status = db.Column(db.String(255),default='active', nullable=False)
     fixed_assets = db.relationship('FixedAssets', back_populates='space', lazy=True)
+    history = db.relationship('FixedAssetHistory', back_populates='space', lazy=True)
+    
     def to_dict(self):
         return {
             'id': self.id,
@@ -80,7 +83,8 @@ class Space(db.Model, SerializerMixin):
             'description': self.description,
             'location': self.location,
             'status': self.status,
-            'fixed_assets': [fixed_asset.to_dict() for fixed_asset in self.fixed_assets]
+            'fixed_assets': [fixed_asset.to_dict() for fixed_asset in self.fixed_assets],
+            'history': [history.to_dict() for history in self.history]
         }
     
     
@@ -192,11 +196,12 @@ class FixedAssetHistory(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     fixed_asset_id = db.Column(db.Integer, db.ForeignKey('fixed_assets.id'), nullable=False)
     status = db.Column(db.String(255), nullable=False)
-    assigned_to = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
-    date = db.Column(db.Date(), unique=False, nullable=False)
+    assigned_to = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)    
+    date = db.Column(db.Date(), unique=False, nullable=False, default=date.today)
     asset= db.relationship('FixedAssets', back_populates='history', lazy=True)
     user= db.relationship('User', back_populates='history', lazy=True)
-    
+    space_id = db.Column(db.Integer, db.ForeignKey('spaces.id'), nullable=True)
+    space = db.relationship('Space', back_populates='history', lazy=True)
     def to_dict(self):
         return {
             'id': self.id,

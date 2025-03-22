@@ -391,9 +391,9 @@ def add_asset_history(asset_id):
         return jsonify({'message': 'Asset not found'}), 404
     data = request.get_json()
     status = data.get('status')
-    date = data.get('date')
     assigned_to = data.get('assigned_to')
-    history = FixedAssetHistory(fixed_asset_id=asset_id, status=status, date=date,assigned_to=assigned_to)
+    space_id = data.get('space_id')
+    history = FixedAssetHistory(fixed_asset_id=asset_id, status=status,assigned_to=assigned_to)
     db.session.add(history)
     db.session.commit()
     return jsonify({'message': 'Asset history added'}), 201

@@ -3,7 +3,7 @@ from sqlalchemy_serializer import SerializerMixin
 db = SQLAlchemy()
 import datetime
 from datetime import date
-
+from datetime import datetime 
 
 class User(db.Model, SerializerMixin):
     __tablename__ = 'users'
@@ -197,7 +197,7 @@ class FixedAssetHistory(db.Model, SerializerMixin):
     fixed_asset_id = db.Column(db.Integer, db.ForeignKey('fixed_assets.id'), nullable=False)
     status = db.Column(db.String(255), nullable=False)
     assigned_to = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)    
-    date = db.Column(db.Date(), unique=False, nullable=False, default=date.today)
+    date = db.Column(db.DateTime, unique=False, nullable=False, default=datetime.utcnow)
     asset= db.relationship('FixedAssets', back_populates='history', lazy=True)
     user= db.relationship('User', back_populates='history', lazy=True)
     space_id = db.Column(db.Integer, db.ForeignKey('spaces.id'), nullable=True)

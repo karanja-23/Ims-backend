@@ -397,5 +397,11 @@ def add_asset_history(asset_id):
     db.session.add(history)
     db.session.commit()
     return jsonify({'message': 'Asset history added'}), 201
+
+@app.route('/assets/history', methods=['DELETE'])
+def delete_asset_history():
+    FixedAssetHistory.query.delete()
+    db.session.commit()
+    return jsonify({'message': 'Asset history deleted'}), 200
 if __name__ == '__main__':
     app.run(debug=True) 

@@ -219,6 +219,7 @@ class Request(db.Model, SerializerMixin):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     user = db.relationship('User', back_populates='requests', lazy=True)
     asset_id = db.Column(db.Integer, db.ForeignKey('fixed_assets.id'), nullable=False)
+    status = db.Column(db.String(255),default='pending', nullable=False)
     asset = db.relationship('FixedAssets', back_populates='requests', lazy=True)
     date = db.Column(db.DateTime, unique=False, nullable=False, default=datetime.utcnow)
     
@@ -227,7 +228,8 @@ class Request(db.Model, SerializerMixin):
             'id':self.id,
             'user': {'username': self.user.username, 'id': self.user.id} if self.user else None,
             'asset': {'id': self.asset.id, 'name': self.asset.name, 'serial_number': self.asset.serial_number} if self.asset else None,
-            'date': self.date.isoformat(),            
+            'date': self.date.isoformat(), 
+            'status': self.status           
         }
             
         

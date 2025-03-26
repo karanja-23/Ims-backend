@@ -25,7 +25,8 @@ class User(db.Model, SerializerMixin):
             'contact': self.contact,
             'role': self.role.to_dict(),
             'history': [history.to_dict() for history in self.history],
-            'fixed_assets': [{'id': asset.id, 'name': asset.name} for asset in self.fixed_assets]
+            'fixed_assets': [{'id': asset.id, 'name': asset.name} for asset in self.fixed_assets],
+            'requests': [request.to_dict() for request in self.requests]
         }
 
     def __repr__(self):

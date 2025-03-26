@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, request
-from models import db,User,Role,Permission,RolePermission,Space,Vendors,FixedAssets, Category, FixedAssetHistory
+from models import db,User,Role,Permission,RolePermission,Space,Vendors,FixedAssets, Category, FixedAssetHistory,Request
 from flask_migrate import Migrate
 from dotenv import load_dotenv
 from flask_cors import CORS
@@ -393,7 +393,7 @@ def add_asset_history(asset_id):
     status = data.get('status')
     assigned_to = data.get('assigned_to')
     space_id = data.get('space_id')
-    history = FixedAssetHistory(fixed_asset_id=asset_id, status=status,assigned_to=assigned_to)
+    history = FixedAssetHistory(fixed_asset_id=asset_id, status=status,assigned_to=assigned_to, space_id=space_id)
     db.session.add(history)
     db.session.commit()
     return jsonify({'message': 'Asset history added'}), 201
@@ -403,5 +403,23 @@ def delete_asset_history():
     FixedAssetHistory.query.delete()
     db.session.commit()
     return jsonify({'message': 'Asset history deleted'}), 200
+
+@app.route('/requests', methods=['GET','POST'])
+def get_categories():
+    if request.method == 'POST':
+        data = request.get_json()
+        asset_id = data.get('asset_id')
+        user_id=data.get('user_id')
+        new_request = Request(asset_id=asset_id, user_id=user_id)
+        db.session.add(new_request)
+        db.session.commit()
+        return jsonify({"message": "Request created successfully"}), 201
+    if request.method == 'GET':
+        requests = Request.query.all()
+        return jsonify([request.to_dict() for request in requests]), 200
+        
+
+
+
 if __name__ == '__main__':
     app.run(debug=True) 

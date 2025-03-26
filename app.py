@@ -70,11 +70,12 @@ def get_user(user_id):
         return jsonify(user.to_dict()), 200
     if request.method == 'PUT':
         data = request.get_json()
-        user.username = data['username']
-        user.email = data['email']
-        user.contact = data['contact']
-        user.password = data['password']
-        user.role_id = data['role_id']
+        user.username = data.get('username', user.username)
+        user.email = data.get('email', user.email)
+        user.contact = data.get('contact', user.contact)
+        user.password = data.get('password', user.password)
+        user.role_id = data.get('role_id', user.role_id)
+
         db.session.commit()
         return jsonify(user.to_dict()), 200
     if request.method == 'DELETE':

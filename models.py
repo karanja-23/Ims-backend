@@ -16,6 +16,7 @@ class User(db.Model, SerializerMixin):
     role = db.relationship('Role', back_populates='users', lazy=True)
     fixed_assets = db.relationship('FixedAssets', back_populates='assign', lazy=True)
     history= db.relationship('FixedAssetHistory', back_populates='user', lazy=True)
+    requests = db.relationship('Request', back_populates='user') 
     def to_dict(self):
         return {
             'id': self.id,
@@ -127,7 +128,7 @@ class Vendors(db.Model, SerializerMixin):
             'till_number': self.till_number,
             'contact_person_name': self.contact_person_name,
             'contact_person_email': self.contact_person_email,
-            'contact_person_contact': self.contact_person_contact,
+            'contact_person_contadate = db.Column(db.DateTime, unique=False, nullable=False, default=datetime.utcnow)ct': self.contact_person_contact,
             'fixed_assets': [fixed_asset.to_dict() for fixed_asset in self.fixed_assets]
         }
     
@@ -162,7 +163,7 @@ class FixedAssets(db.Model, SerializerMixin):
     category_id = db.Column(db.Integer, db.ForeignKey('categories.id'), nullable=False)
     category = db.relationship('Category', back_populates='fixed_assets', lazy=True)
     history = db.relationship('FixedAssetHistory', back_populates='asset', lazy=True)
-    
+    requests = db.relationship('Request', back_populates='asset') 
     def to_dict(self):
         return {
             'id': self.id,
@@ -212,4 +213,21 @@ class FixedAssetHistory(db.Model, SerializerMixin):
             'date': self.date.isoformat(),            
             
         }
+class Request(db.Model, SerializerMixin):
+    __tablename__ = 'requests'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    user = db.relationship('User', back_populates='requests', lazy=True)
+    asset_id = db.Column(db.Integer, db.ForeignKey('fixed_assets.id'), nullable=False)
+    asset = db.relationship('FixedAssets', back_populates='requests', lazy=True)
+    date = db.Column(db.DateTime, unique=False, nullable=False, default=datetime.utcnow)
     
+    def to_dict(self):
+        return{
+            'id':self.id,
+            'user': {'username': self.user.username, 'id': self.user.id} if self.user else None,
+            'asset': {'id': self.asset.id, 'name': self.asset.name, 'serial_number': self.asset.serial_number} if self.asset else None,
+            'date': self.date.isoformat(),            
+        }
+            
+        

@@ -355,6 +355,12 @@ def get_asset(asset_id):
         db.session.commit()
         return jsonify({'message': 'Asset deleted'}), 200
 
+@app.route('/assets/filter/<serial_number>', methods=['GET'])
+def get_asset_by_serial_number(serial_number):
+    asset = FixedAssets.query.filter_by(serial_number=serial_number).first()
+    if asset is None:
+        return jsonify({'message': 'Asset not found'}), 404
+    return jsonify(asset.to_dict()), 200
 @app.route('/categories',methods=['POST','GET'])
 def create_category():
     if request.method == 'POST':

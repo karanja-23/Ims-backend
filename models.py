@@ -165,6 +165,7 @@ class FixedAssets(db.Model, SerializerMixin):
     category = db.relationship('Category', back_populates='fixed_assets', lazy=True)
     history = db.relationship('FixedAssetHistory', back_populates='asset', lazy=True)
     requests = db.relationship('Request', back_populates='asset') 
+    condition = db.Column(db.String(255), nullable=True)
     def to_dict(self):
         return {
             'id': self.id,
@@ -178,7 +179,8 @@ class FixedAssets(db.Model, SerializerMixin):
             'space': {'id': self.space.id, 'name': self.space.name} if self.space else None,
             'vendor': {'id': self.vendor.id, 'name': self.vendor.name} if self.vendor else None,
             'category': {'id': self.category.id, 'name': self.category.name} if self.category else None,
-            'history': [history.to_dict() for history in self.history]
+            'history': [history.to_dict() for history in self.history],
+            'condition': self.condition
         }
         
     def update_status(self, new_status, user_id=None):

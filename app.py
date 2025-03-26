@@ -348,6 +348,7 @@ def get_asset(asset_id):
         asset.space_id = data.get('space_id', asset.space_id)
         asset.vendor_id = data.get('vendor_id', asset.vendor_id)
         asset.category_id = data.get('category_id', asset.category_id)
+        asset.condition = data.get('condition', asset.condition)
         db.session.commit()
         return jsonify({'message': 'Asset updated'}), 200
     if request.method == 'DELETE':

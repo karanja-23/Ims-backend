@@ -419,6 +419,24 @@ def get_categories():
         return jsonify([request.to_dict() for request in requests]), 200
         
 
+@app.route('/requests/<int:request_id>', methods=['GET', 'PUT', 'DELETE'])
+def get_request(request_id):
+    my_request = Request.query.get(request_id)
+    if my_request is None:
+        return jsonify({'message': 'Request not found'}), 404
+    if request.method == 'GET':
+        return jsonify(my_request.to_dict()), 200
+    if request.method == 'PUT':
+        data = request.get_json()
+        my_request.asset_id = data.get('asset_id', my_request.asset_id)
+        my_request.user_id = data.get('user_id', my_request.user_id)
+        my_request.status = data.get('status', my_request.status)
+        db.session.commit()
+        return jsonify(my_request.to_dict()), 200
+    if request.method == 'DELETE':
+        db.session.delete(my_request)
+        db.session.commit()
+        return jsonify({'message': 'Request deleted'}), 200
 
 
 if __name__ == '__main__':

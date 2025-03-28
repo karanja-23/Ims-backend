@@ -129,7 +129,7 @@ class Vendors(db.Model, SerializerMixin):
             'till_number': self.till_number,
             'contact_person_name': self.contact_person_name,
             'contact_person_email': self.contact_person_email,
-            'contact_person_contadate = db.Column(db.DateTime, unique=False, nullable=False, default=datetime.utcnow)ct': self.contact_person_contact,
+            'contact_person_contact': self.contact_person_contact,
             'fixed_assets': [fixed_asset.to_dict() for fixed_asset in self.fixed_assets]
         }
     

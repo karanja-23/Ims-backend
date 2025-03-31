@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, request
-from models import db,User,Role,Permission,RolePermission,Space,Vendors,FixedAssets, Category, FixedAssetHistory,Request
+from models import db,User,Role,Permission,RolePermission,Space,Vendors,FixedAssets, Category, FixedAssetHistory,Request, Inventory, InventoryCategory, InventoryItem
 from flask_migrate import Migrate
 from dotenv import load_dotenv
 from flask_cors import CORS
@@ -446,6 +446,129 @@ def get_request(request_id):
         db.session.commit()
         return jsonify({'message': 'Request deleted'}), 200
 
+@app.route('/inventory/categories', methods=['GET', 'POST'])
+def get_inventory_categories():
+    if request.method == 'GET':
+        categories = InventoryCategory.query.all()
+        return jsonify([category.to_dict() for category in categories]), 200
+    if request.method == 'POST':
+        data = request.get_json()
+        name = data.get('name')
+        category = InventoryCategory(name=name)
+        db.session.add(category)
+        db.session.commit()
+        return jsonify({"message": "Category created successfully"}), 201
 
+@app.route('/inventory/categories/<int:category_id>', methods=['GET', 'PUT', 'DELETE'])
+def get_inventory_category(category_id):
+    category = InventoryCategory.query.get(category_id)
+    if category is None:
+        return jsonify({'message': 'Category not found'}), 404
+    if request.method == 'GET':
+        return jsonify(category.to_dict()), 200
+    if request.method == 'PUT':
+        data = request.get_json()
+        category.name = data.get('name', category.name)
+        db.session.commit()
+        return jsonify(category.to_dict()), 200
+    if request.method == 'DELETE':
+        db.session.delete(category)
+        db.session.commit()
+        return jsonify({'message': 'Category deleted'}), 200
+    
+@app.route('/inventory', methods=['GET', 'POST'])
+def get_inventories():
+    if request.method == 'GET':
+        inventories = Inventory.query.all()
+        return jsonify([inventory.to_dict() for inventory in inventories]), 200
+    if request.method == 'POST':
+        data = request.get_json()
+        name = data.get('name')
+        category_id = data.get('category_id')
+        quantity = data.get('quantity')
+        unit_cost = data.get('unit_cost')
+        inventory = Inventory(name=name, category_id=category_id, quantity=quantity, unit_cost=unit_cost)
+        db.session.add(inventory)
+        db.session.commit()
+        return jsonify({"message": "Inventory created successfully"}), 201
+    
+@app.route('/inventory/<int:inventory_id>', methods=['GET', 'PUT', 'DELETE'])
+def get_inventory(inventory_id):
+    inventory = Inventory.query.get(inventory_id)
+    if inventory is None:
+        return jsonify({'message': 'Inventory item not found'}), 404
+    if request.method == 'GET':
+        return jsonify(inventory.to_dict()), 200
+    if request.method == 'PUT':
+        data = request.get_json()
+        inventory.name = data.get('name', inventory.name)
+        inventory.category_id = data.get('category_id', inventory.category_id)
+        inventory.quantity = data.get('quantity', inventory.quantity)
+        inventory.unit_cost = data.get('unit_cost', inventory.unit_cost)
+        db.session.commit()
+        return jsonify(inventory.to_dict()), 200
+    if request.method == 'DELETE':
+        db.session.delete(inventory)
+        db.session.commit()
+        return jsonify({'message': 'Inventory item deleted'}), 200
+    
+@app.route('/inventory/items', methods=['GET', 'POST'])
+def get_inventory_items():
+    if request.method == 'GET':
+        inventory_items = InventoryItem.query.all()
+        return jsonify([item.to_dict() for item in inventory_items]), 200
+    if request.method == 'POST':
+        data = request.get_json()
+        inventory_id = data.get('inventory_id')
+        serial_number= data.get('serial_number')
+        description = data.get('description')
+        date_acquired = data.get('date_acquired')
+        condition = data.get('condition')
+        status = data.get('status')        
+        quantity = data.get('quantity')
+        assigned_to = data.get('assigned_to')
+        vendor_id = data.get('vendor_id')
+        unit_cost = data.get('unit_cost')
+        inventory_item = InventoryItem(
+            inventory_id=inventory_id,
+            serial_number=serial_number,
+            description=description,
+            date_acquired=date_acquired,
+            condition=condition,
+            status=status,
+            quantity=quantity,
+            assigned_to=assigned_to,
+            vendor_id=vendor_id,
+            unit_cost=unit_cost
+        )
+        db.session.add(inventory_item)
+        db.session.commit()
+        return jsonify({"message": "Inventory item created successfully"}), 201
+
+@app.route('/inventory/items/<int:item_id>', methods=['GET', 'PUT', 'DELETE'])  
+def get_inventory_item(item_id):
+    item = InventoryItem.query.get(item_id)
+    if item is None:
+        return jsonify({'message': 'Inventory item not found'}), 404
+    if request.method == 'GET':
+        return jsonify(item.to_dict()), 200
+    if request.method == 'PUT':
+        data = request.get_json()
+        item.inventory_id = data.get('inventory_id', item.inventory_id)
+        item.serial_number = data.get('serial_number', item.serial_number)
+        item.description = data.get('description', item.description)
+        item.date_acquired = data.get('date_acquired', item.date_acquired)
+        item.condition = data.get('condition', item.condition)
+        item.status = data.get('status', item.status)
+        item.quantity = data.get('quantity', item.quantity)
+        item.assigned_to = data.get('assigned_to', item.assigned_to)
+        item.vendor_id = data.get('vendor_id', item.vendor_id)
+        item.unit_cost = data.get('unit_cost', item.unit_cost)
+        db.session.commit()
+        return jsonify(item.to_dict()), 200
+    if request.method == 'DELETE':
+        db.session.delete(item)
+        db.session.commit()
+        return jsonify({'message': 'Inventory item deleted'}), 200
 if __name__ == '__main__':
     app.run(debug=True) 

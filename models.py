@@ -254,7 +254,7 @@ class Inventory(db.Model, SerializerMixin):
     name= db.Column(db.String(255), nullable=False)
     category_id = db.Column(db.Integer, db.ForeignKey('inventory_categories.id'), nullable=False)
     category = db.relationship('InventoryCategory', back_populates='inventories', lazy=True)
-    quantity = db.Column(db.Integer, nullable=False)
+    quantity = db.Column(db.Integer, default=0, nullable=False)
     unit_cost = db.Column(db.Float, nullable=False)
     inventory_items = db.relationship('InventoryItem', back_populates='inventory', lazy=True)
     def to_dict(self):

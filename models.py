@@ -17,6 +17,7 @@ class User(db.Model, SerializerMixin):
     fixed_assets = db.relationship('FixedAssets', back_populates='assign', lazy=True)
     history= db.relationship('FixedAssetHistory', back_populates='user', lazy=True)
     requests = db.relationship('Request', back_populates='user') 
+    assigned_inventory = db.relationship('InventoryItem', back_populates='assigned_user', lazy=True)
     def to_dict(self):
         return {
             'id': self.id,
@@ -110,7 +111,7 @@ class Vendors(db.Model, SerializerMixin):
     contact_person_email = db.Column(db.String(255), nullable=True)
     contact_person_contact = db.Column(db.String(255), nullable=True)
     fixed_assets = db.relationship('FixedAssets', back_populates='vendor', lazy=True)
-
+    assigned_inventory = db.relationship('InventoryItem', back_populates='vendor', lazy=True)
     def to_dict(self):
         return {
             'id': self.id,
@@ -234,5 +235,58 @@ class Request(db.Model, SerializerMixin):
             'date': self.date.isoformat(), 
             'status': self.status           
         }
+
+class InventoryCategory(db.Model, SerializerMixin):
+    __tablename__ = 'inventory_categories'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(80), unique=True, nullable=False)
+    inventories = db.relationship('Inventory', back_populates='category', lazy=True)
             
-        
+class Inventory(db.Model, SerializerMixin):
+    __tablename__ = 'inventories'
+    id = db.Column(db.Integer, primary_key=True)
+    name= db.Column(db.String(255), nullable=False)
+    category_id = db.Column(db.Integer, db.ForeignKey('inventory_categories.id'), nullable=False)
+    category = db.relationship('InventoryCategory', back_populates='inventories', lazy=True)
+    quantity = db.Column(db.Integer, nullable=False)
+    unit_cost = db.Column(db.Float, nullable=False)
+    inventory_items = db.relationship('InventoryItem', back_populates='inventory', lazy=True)
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'category': {'id': self.category.id, 'name': self.category.name} if self.category else None,
+            'quantity': self.quantity,
+            'unit_cost': self.unit_cost
+        }
+class InventoryItem(db.Model, SerializerMixin):
+    __tablename__ = 'inventory_items'
+    id = db.Column(db.Integer, primary_key=True)
+    inventory_id = db.Column(db.Integer, db.ForeignKey('inventories.id'), nullable=False)
+    inventory = db.relationship('Inventory', back_populates='inventory_items', lazy=True)
+    serial_number = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.String(255), nullable=False)
+    date_acquired = db.Column(db.DateTime, nullable=False)
+    condition = db.Column(db.String(255), nullable=False)
+    status = db.Column(db.String(255), nullable=False)
+    quantity = db.Column(db.Integer, nullable=False)
+    unit_cost = db.Column(db.Float, nullable=False)
+    assigned_to = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    assigned_user = db.relationship('User', back_populates='assigned_inventory', lazy=True)
+    vendor_id = db.Column(db.Integer, db.ForeignKey('vendors.id'), nullable=True)
+    vendor = db.relationship('Vendors', back_populates='assigned_inventory', lazy=True)
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'inventory': {'id': self.inventory.id, 'name': self.inventory.name} if self.inventory else None,
+            'serial_number': self.serial_number,
+            'description': self.description,
+            'date_acquired': self.date_acquired.isoformat(),
+            'condition': self.condition,
+            'status': self.status,
+            'quantity': self.quantity,
+            'unit_cost': self.unit_cost,
+            'assigned_to': {'username': self.assigned_user.username} if self.assigned_user else None,
+            'vendor': {'name': self.vendor.name} if self.vendor else None
+        }

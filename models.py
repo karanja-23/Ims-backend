@@ -257,7 +257,8 @@ class Inventory(db.Model, SerializerMixin):
             'name': self.name,
             'category': {'id': self.category.id, 'name': self.category.name} if self.category else None,
             'quantity': self.quantity,
-            'unit_cost': self.unit_cost
+            'unit_cost': self.unit_cost,
+            'inventory_items': [item.to_dict() for item in self.inventory_items]
         }
 class InventoryItem(db.Model, SerializerMixin):
     __tablename__ = 'inventory_items'
@@ -269,7 +270,7 @@ class InventoryItem(db.Model, SerializerMixin):
     date_acquired = db.Column(db.DateTime, nullable=False)
     condition = db.Column(db.String(255), nullable=False)
     status = db.Column(db.String(255), nullable=False)
-    quantity = db.Column(db.Integer, nullable=False)
+    quantity = db.Column(db.Integer, default=0, nullable=False)
     unit_cost = db.Column(db.Float, nullable=False)
     assigned_to = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     assigned_user = db.relationship('User', back_populates='assigned_inventory', lazy=True)

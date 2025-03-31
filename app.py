@@ -485,9 +485,8 @@ def get_inventories():
         data = request.get_json()
         name = data.get('name')
         category_id = data.get('category_id')
-        quantity = data.get('quantity')
         unit_cost = data.get('unit_cost')
-        inventory = Inventory(name=name, category_id=category_id, quantity=quantity, unit_cost=unit_cost)
+        inventory = Inventory(name=name, category_id=category_id,unit_cost=unit_cost)
         db.session.add(inventory)
         db.session.commit()
         return jsonify({"message": "Inventory created successfully"}), 201

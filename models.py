@@ -78,7 +78,7 @@ class Space(db.Model, SerializerMixin):
     status = db.Column(db.String(255),default='active', nullable=False)
     fixed_assets = db.relationship('FixedAssets', back_populates='space', lazy=True)
     history = db.relationship('FixedAssetHistory', back_populates='space', lazy=True)
-    
+    assigned_inventory = db.relationship('InventoryItem', back_populates='space', lazy=True)
     def to_dict(self):
         return {
             'id': self.id,
@@ -87,7 +87,8 @@ class Space(db.Model, SerializerMixin):
             'location': self.location,
             'status': self.status,
             'fixed_assets': [fixed_asset.to_dict() for fixed_asset in self.fixed_assets],
-            'history': [history.to_dict() for history in self.history]
+            'history': [history.to_dict() for history in self.history],
+            'inventory_items': [inventory_item.to_dict() for inventory_item in self.assigned_inventory]
         }
     
     
@@ -273,7 +274,7 @@ class InventoryItem(db.Model, SerializerMixin):
     inventory = db.relationship('Inventory', back_populates='inventory_items', lazy=True)
     serial_number = db.Column(db.String(255), nullable=False)
     description = db.Column(db.String(255), nullable=False)
-    date_acquired = db.Column(db.DateTime, nullable=False)
+    date_acquired = db.Column(db.Date, nullable=False)
     condition = db.Column(db.String(255), nullable=False)
     status = db.Column(db.String(255), nullable=False)
     quantity = db.Column(db.Integer, default=0, nullable=False)
@@ -282,7 +283,8 @@ class InventoryItem(db.Model, SerializerMixin):
     assigned_user = db.relationship('User', back_populates='assigned_inventory', lazy=True)
     vendor_id = db.Column(db.Integer, db.ForeignKey('vendors.id'), nullable=True)
     vendor = db.relationship('Vendors', back_populates='assigned_inventory', lazy=True)
-    
+    space_id = db.Column(db.Integer, db.ForeignKey('spaces.id'), nullable=True)
+    space = db.relationship('Space', back_populates='assigned_inventory', lazy=True)
     def to_dict(self):
         return {
             'id': self.id,
@@ -295,5 +297,6 @@ class InventoryItem(db.Model, SerializerMixin):
             'quantity': self.quantity,
             'unit_cost': self.unit_cost,
             'assigned_to': {'username': self.assigned_user.username} if self.assigned_user else None,
-            'vendor': {'name': self.vendor.name} if self.vendor else None
+            'vendor': {'name': self.vendor.name} if self.vendor else None,
+            'space': {'name': self.space.name, 'id': self.space.id} if self.space else None
         }

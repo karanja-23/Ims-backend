@@ -510,7 +510,18 @@ def get_inventory(inventory_id):
         db.session.delete(inventory)
         db.session.commit()
         return jsonify({'message': 'Inventory item deleted'}), 200
+
+@app.route('/update/quantity/<int:inventory_id>', methods=['PUT'])
+def update_inventory_quantity(inventory_id):
+    inventory = Inventory.query.get(inventory_id)
+    if inventory is None:
+        return jsonify({'message': 'Inventory item not found'}), 404
+
     
+    inventory.quantity = inventory.quantity + 1
+    db.session.commit()
+
+    return jsonify(inventory.to_dict()), 200
 @app.route('/inventory/items', methods=['GET', 'POST'])
 def get_inventory_items():
     if request.method == 'GET':

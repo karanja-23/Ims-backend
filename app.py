@@ -522,23 +522,21 @@ def get_inventory_items():
         serial_number= data.get('serial_number')
         description = data.get('description')
         date_acquired = data.get('date_acquired')
-        condition = data.get('condition')
-        status = data.get('status')        
+        condition = data.get('condition')      
         quantity = data.get('quantity')
-        assigned_to = data.get('assigned_to')
         vendor_id = data.get('vendor_id')
         unit_cost = data.get('unit_cost')
+        space_id = data.get('space_id')
         inventory_item = InventoryItem(
             inventory_id=inventory_id,
             serial_number=serial_number,
             description=description,
             date_acquired=date_acquired,
             condition=condition,
-            status=status,
             quantity=quantity,
-            assigned_to=assigned_to,
             vendor_id=vendor_id,
-            unit_cost=unit_cost
+            unit_cost=unit_cost,
+            space_id=space_id
         )
         db.session.add(inventory_item)
         db.session.commit()

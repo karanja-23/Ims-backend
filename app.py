@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, request
-from models import db,User,Role,Permission,RolePermission,Space,Vendors,FixedAssets, Category, FixedAssetHistory,Request, Inventory, InventoryCategory, InventoryItem
+from models import db,User,Role,Permission,RolePermission,Space,Vendors,FixedAssets, Category, FixedAssetHistory,Request, Inventory, InventoryCategory, InventoryItem,InventoryHistory
 from flask_migrate import Migrate
 from dotenv import load_dotenv
 from flask_cors import CORS
@@ -412,9 +412,31 @@ def delete_asset_history():
     db.session.commit()
     return jsonify({'message': 'Asset history deleted'}), 200
 
+@app.route('/inventory/<int:inventory_id>/history',methods = ['POST'])
+def add_inventory_history(inventory_id):
+    inventory = InventoryItem.query.get(inventory_id)
+    if inventory is None:
+        return jsonify({'message': 'Inventory not found'}), 404
+    
+    data = request.get_json()
+    status = data.get('status')
+    assigned_to = data.get('assigned_to')
+    space_id = data.get('space_id')
+    
+    history = InventoryHistory(inventory_id=inventory_id, status=status, assigned_to=assigned_to, space_id=space_id)
+    db.session.add(history)
+    db.session.commit()
+    return jsonify({'message': 'Inventory history added'}), 201
+@app.route('/inventory/history', methods=['DELETE'])
+def delete_inventory_history():
+    InventoryHistory.query.delete()
+    db.session.commit()
+    return jsonify({'message': 'Inventory history deleted'}), 200
+
+        
 @app.route('/requests', methods=['GET','POST'])
 def get_categories():
-    if request.method == 'POST':
+    if request.method == 'POST':    
         data = request.get_json()
         asset_id = data.get('asset_id')
         user_id=data.get('user_id')

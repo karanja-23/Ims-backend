@@ -18,6 +18,7 @@ class User(db.Model, SerializerMixin):
     history= db.relationship('FixedAssetHistory', back_populates='user', lazy=True)
     requests = db.relationship('Request', back_populates='user') 
     assigned_inventory = db.relationship('InventoryItem', back_populates='assigned_user', lazy=True)
+    inventory_history = db.relationship('InventoryHistory', back_populates='user', lazy=True)
     def to_dict(self):
         return {
             'id': self.id,
@@ -27,7 +28,8 @@ class User(db.Model, SerializerMixin):
             'role': self.role.to_dict(),
             'history': [history.to_dict() for history in self.history],
             'fixed_assets': [{'id': asset.id, 'name': asset.name} for asset in self.fixed_assets],
-            'requests': [request.to_dict() for request in self.requests]
+            'requests': [request.to_dict() for request in self.requests],
+            'inventory_history': [history.to_dict() for history in self.inventory_history]
         }
 
     def __repr__(self):
@@ -79,6 +81,7 @@ class Space(db.Model, SerializerMixin):
     fixed_assets = db.relationship('FixedAssets', back_populates='space', lazy=True)
     history = db.relationship('FixedAssetHistory', back_populates='space', lazy=True)
     assigned_inventory = db.relationship('InventoryItem', back_populates='space', lazy=True)
+    inventory_history = db.relationship('InventoryHistory', back_populates='space', lazy=True)
     def to_dict(self):
         return {
             'id': self.id,
@@ -88,7 +91,8 @@ class Space(db.Model, SerializerMixin):
             'status': self.status,
             'fixed_assets': [fixed_asset.to_dict() for fixed_asset in self.fixed_assets],
             'history': [history.to_dict() for history in self.history],
-            'inventory_items': [inventory_item.to_dict() for inventory_item in self.assigned_inventory]
+            'inventory_items': [inventory_item.to_dict() for inventory_item in self.assigned_inventory],
+            'inventory_history': [history.to_dict() for history in self.inventory_history]  
         }
     
     
@@ -218,6 +222,29 @@ class FixedAssetHistory(db.Model, SerializerMixin):
             'date': self.date.isoformat(),            
             
         }
+        
+class InventoryHistory(db.Model, SerializerMixin):  
+    __tablename__ = 'inventory_history'
+    id = db.Column(db.Integer, primary_key=True)
+    inventory_id = db.Column(db.Integer, db.ForeignKey('inventory_items.id'), nullable=False)
+    status = db.Column(db.String(255), nullable=False)
+    assigned_to = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    date = db.Column(db.DateTime, unique=False, nullable=False, default=datetime.utcnow)
+    inventory_item= db.relationship('InventoryItem', back_populates='history', lazy=True)
+    user= db.relationship('User', back_populates='inventory_history', lazy=True)
+    space_id = db.Column(db.Integer, db.ForeignKey('spaces.id'), nullable=True)
+    space = db.relationship('Space', back_populates='inventory_history', lazy=True)
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'inventory_id': self.inventory_id,
+            'status': self.status,
+            'assigned_to': {'username': self.user.username} if self.user else None,
+            'date': self.date.isoformat(),
+            'space': {'id': self.space.id, 'name': self.space.name} if self.space else None
+            
+        }
+    
 class Request(db.Model, SerializerMixin):
     __tablename__ = 'requests'
     id = db.Column(db.Integer, primary_key=True)
@@ -258,6 +285,7 @@ class Inventory(db.Model, SerializerMixin):
     quantity = db.Column(db.Integer, default=0, nullable=False)
     unit_cost = db.Column(db.Float, nullable=False)
     inventory_items = db.relationship('InventoryItem', back_populates='inventory', lazy=True)
+    
     def to_dict(self):
         return {
             'id': self.id,
@@ -285,6 +313,7 @@ class InventoryItem(db.Model, SerializerMixin):
     vendor = db.relationship('Vendors', back_populates='assigned_inventory', lazy=True)
     space_id = db.Column(db.Integer, db.ForeignKey('spaces.id'), nullable=True)
     space = db.relationship('Space', back_populates='assigned_inventory', lazy=True)
+    history = db.relationship('InventoryHistory', back_populates='inventory_item', lazy=True)
     def to_dict(self):
         return {
             'id': self.id,

@@ -241,7 +241,8 @@ class InventoryHistory(db.Model, SerializerMixin):
             'status': self.status,
             'assigned_to': {'username': self.user.username} if self.user else None,
             'date': self.date.isoformat(),
-            'space': {'id': self.space.id, 'name': self.space.name} if self.space else None
+            'space': {'id': self.space.id, 'name': self.space.name} if self.space else None,
+            'name': self.inventory_item.inventory.name
             
         }
     

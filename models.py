@@ -237,7 +237,7 @@ class InventoryHistory(db.Model, SerializerMixin):
     def to_dict(self):
         return {
             'id': self.id,
-            'inventory_id': self.inventory_id,
+            'inventory_item': {'id': self.inventory_item.id, 'serial_number': self.inventory_item.serial_number} if self.inventory_item else None,
             'status': self.status,
             'assigned_to': {'username': self.user.username} if self.user else None,
             'date': self.date.isoformat(),

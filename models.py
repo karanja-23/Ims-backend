@@ -212,6 +212,7 @@ class FixedAssetHistory(db.Model, SerializerMixin):
     user= db.relationship('User', back_populates='history', lazy=True)
     space_id = db.Column(db.Integer, db.ForeignKey('spaces.id'), nullable=True)
     space = db.relationship('Space', back_populates='history', lazy=True)
+    type= db.Column(db.String(255), default='fixed asset', nullable=True)
     def to_dict(self):
         return {
             'id': self.id,
@@ -219,7 +220,8 @@ class FixedAssetHistory(db.Model, SerializerMixin):
             'status': self.status,
              'asset': {'id': self.asset.id, 'name': self.asset.name, 'serial_number': self.asset.serial_number} if self.asset else None,
             'assigned_to': {'username': self.user.username} if self.user else None,
-            'date': self.date.isoformat(),            
+            'date': self.date.isoformat(),   
+            'type': self.type        
             
         }
         
@@ -234,6 +236,7 @@ class InventoryHistory(db.Model, SerializerMixin):
     user= db.relationship('User', back_populates='inventory_history', lazy=True)
     space_id = db.Column(db.Integer, db.ForeignKey('spaces.id'), nullable=True)
     space = db.relationship('Space', back_populates='inventory_history', lazy=True)
+    type = db.Column(db.String(255), default='inventory', nullable=True)
     def to_dict(self):
         return {
             'id': self.id,
@@ -242,8 +245,8 @@ class InventoryHistory(db.Model, SerializerMixin):
             'assigned_to': {'username': self.user.username} if self.user else None,
             'date': self.date.isoformat(),
             'space': {'id': self.space.id, 'name': self.space.name} if self.space else None,
-            'name': self.inventory_item.inventory.name
-            
+            'name': self.inventory_item.inventory.name,
+            'type': self.type
         }
     
 class Request(db.Model, SerializerMixin):

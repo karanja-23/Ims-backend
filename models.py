@@ -300,7 +300,7 @@ class InventoryItem(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     inventory_id = db.Column(db.Integer, db.ForeignKey('inventories.id'), nullable=False)
     inventory = db.relationship('Inventory', back_populates='inventory_items', lazy=True)
-    serial_number = db.Column(db.String(255), nullable=False)
+    serial_number = db.Column(db.String(255), unique=True, nullable=False)
     description = db.Column(db.String(255), nullable=False)
     date_acquired = db.Column(db.Date, nullable=False)
     condition = db.Column(db.String(255), nullable=False)

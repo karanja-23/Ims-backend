@@ -327,5 +327,6 @@ class InventoryItem(db.Model, SerializerMixin):
             'unit_cost': self.unit_cost,
             'assigned_to': {'username': self.assigned_user.username} if self.assigned_user else None,
             'vendor': {'name': self.vendor.name} if self.vendor else None,
-            'space': {'name': self.space.name, 'id': self.space.id} if self.space else None
+            'space': {'name': self.space.name, 'id': self.space.id} if self.space else None,
+            'history': [history.to_dict() for history in self.history]
         }

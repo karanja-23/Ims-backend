@@ -237,7 +237,7 @@ class InventoryHistory(db.Model, SerializerMixin):
     def to_dict(self):
         return {
             'id': self.id,
-            'inventory_id': self.inventory_id,
+            'inventory_item': {'id': self.inventory_item.id, 'serial_number': self.inventory_item.serial_number} if self.inventory_item else None,
             'status': self.status,
             'assigned_to': {'username': self.user.username} if self.user else None,
             'date': self.date.isoformat(),
@@ -300,7 +300,7 @@ class InventoryItem(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     inventory_id = db.Column(db.Integer, db.ForeignKey('inventories.id'), nullable=False)
     inventory = db.relationship('Inventory', back_populates='inventory_items', lazy=True)
-    serial_number = db.Column(db.String(255), nullable=False)
+    serial_number = db.Column(db.String(255), unique=True, nullable=False)
     description = db.Column(db.String(255), nullable=False)
     date_acquired = db.Column(db.Date, nullable=False)
     condition = db.Column(db.String(255), nullable=False)

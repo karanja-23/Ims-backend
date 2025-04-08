@@ -308,7 +308,7 @@ class InventoryItem(db.Model, SerializerMixin):
     description = db.Column(db.String(255), nullable=False)
     date_acquired = db.Column(db.Date, nullable=False)
     condition = db.Column(db.String(255), nullable=False)
-    status = db.Column(db.String(255), default='available', nullable=False)
+    status = db.Column(db.String(255), default='unassigned', nullable=False)
     quantity = db.Column(db.Integer, default=0, nullable=False)
     unit_cost = db.Column(db.Float, nullable=False)
     assigned_to = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)

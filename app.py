@@ -610,12 +610,11 @@ def get_orders():
     if request.method == 'POST':
         data = request.get_json()
         name = data.get('name')
-        order_id = data.get('order_id')
         description = data.get('description')
         quantity = data.get('quantity')
         vendor_id = data.get('vendor_id')
         user_id = data.get('user_id')
-        order = Orders(name=name, description=description, quantity=quantity, vendor_id=vendor_id, user_id=user_id, order_id=order_id)
+        order = Orders(name=name, description=description, quantity=quantity, vendor_id=vendor_id, user_id=user_id)
         db.session.add(order)
         db.session.commit()
         return jsonify({"message": "Order created successfully"}), 201    

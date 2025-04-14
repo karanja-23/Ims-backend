@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import event
 from sqlalchemy_serializer import SerializerMixin
 db = SQLAlchemy()
 import datetime
@@ -352,6 +353,8 @@ class Orders(db.Model, SerializerMixin):
     order_items = db.relationship('OrderItem', back_populates='order', lazy=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     user = db.relationship('User', back_populates='orders', lazy=True)
+    
+    
     def to_dict(self):
         return {
             'id': self.id,
@@ -364,7 +367,18 @@ class Orders(db.Model, SerializerMixin):
             'status': self.status,
             'placed_by': {'username': self.user.username, 'id': self.user.id} if self.user else None
         }
-    
+def generate_next_order_id():
+    last_order = Orders.query.order_by(Orders.id.desc()).first()
+    if last_order and last_order.order_id.startswith("ORD"):
+        last_number = int(last_order.order_id.replace("ORD", ""))
+        next_number = last_number + 1
+    else:
+        next_number = 1
+    return f"ORD{next_number:04d}"        
+        
+@event.listens_for(Orders, 'before_insert')
+def set_order_id(mapper, connect, target):
+    target.order_id = generate_next_order_id()    
 class OrderItem(db.Model, SerializerMixin):
     __tablename__ = 'order_items'
     id = db.Column(db.Integer, primary_key=True)

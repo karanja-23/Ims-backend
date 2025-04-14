@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import event
 from sqlalchemy_serializer import SerializerMixin
 db = SQLAlchemy()
 import datetime
@@ -19,6 +20,7 @@ class User(db.Model, SerializerMixin):
     requests = db.relationship('Request', back_populates='user') 
     assigned_inventory = db.relationship('InventoryItem', back_populates='assigned_user', lazy=True)
     inventory_history = db.relationship('InventoryHistory', back_populates='user', lazy=True)
+    orders = db.relationship('Orders', back_populates='user', lazy=True)
     def to_dict(self):
         return {
             'id': self.id,
@@ -117,6 +119,7 @@ class Vendors(db.Model, SerializerMixin):
     contact_person_contact = db.Column(db.String(255), nullable=True)
     fixed_assets = db.relationship('FixedAssets', back_populates='vendor', lazy=True)
     assigned_inventory = db.relationship('InventoryItem', back_populates='vendor', lazy=True)
+    orders = db.relationship('Orders', back_populates='vendor', lazy=True)
     def to_dict(self):
         return {
             'id': self.id,
@@ -136,7 +139,8 @@ class Vendors(db.Model, SerializerMixin):
             'contact_person_name': self.contact_person_name,
             'contact_person_email': self.contact_person_email,
             'contact_person_contact': self.contact_person_contact,
-            'fixed_assets': [fixed_asset.to_dict() for fixed_asset in self.fixed_assets]
+            'fixed_assets': [fixed_asset.to_dict() for fixed_asset in self.fixed_assets],
+            'orders': [order.to_dict() for order in self.orders],
         }
     
 class Category(db.Model, SerializerMixin):    
@@ -334,3 +338,65 @@ class InventoryItem(db.Model, SerializerMixin):
             'space': {'name': self.space.name, 'id': self.space.id} if self.space else None,
             'history': [history.to_dict() for history in self.history]
         }
+        
+class Orders(db.Model, SerializerMixin):
+    __tablename__ = 'orders'
+    id = db.Column(db.Integer, primary_key=True)
+    order_id= db.Column(db.String(100), nullable=False, unique=True)
+    name = db.Column(db.String(80), nullable=False)
+    description = db.Column(db.String(255), nullable=False)
+    vendor_id = db.Column(db.Integer, db.ForeignKey('vendors.id'), nullable=False)
+    vendor = db.relationship('Vendors', back_populates='orders', lazy=True)
+    date=db.Column(db.Date, nullable=False, default=datetime.utcnow)
+    quantity=db.Column(db.Integer, nullable=False)
+    status=db.Column(db.String(255), default='pending', nullable=False)
+    order_items = db.relationship('OrderItem', back_populates='order', lazy=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    user = db.relationship('User', back_populates='orders', lazy=True)
+    
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'order_id': self.order_id,
+            'name': self.name,
+            'description': self.description,
+            'quantity': self.quantity,
+            'vendor': {'name': self.vendor.name, 'id': self.vendor.id} if self.vendor else None,
+            'date': self.date.isoformat(),
+            'status': self.status,
+            'placed_by': {'username': self.user.username, 'id': self.user.id} if self.user else None
+        }
+def generate_next_order_id():
+    last_order = Orders.query.order_by(Orders.id.desc()).first()
+    if last_order and last_order.order_id.startswith("ORD"):
+        last_number = int(last_order.order_id.replace("ORD", ""))
+        next_number = last_number + 1
+    else:
+        next_number = 1
+    return f"ORD{next_number:04d}"        
+        
+@event.listens_for(Orders, 'before_insert')
+def set_order_id(mapper, connect, target):
+    target.order_id = generate_next_order_id()    
+class OrderItem(db.Model, SerializerMixin):
+    __tablename__ = 'order_items'
+    id = db.Column(db.Integer, primary_key=True)
+    order_id = db.Column(db.Integer, db.ForeignKey('orders.id'), nullable=False)
+    order = db.relationship('Orders', back_populates='order_items', lazy=True)
+    name = db.Column(db.String(80), nullable=False)
+    quantity = db.Column(db.Integer, default=0, nullable=False)
+    type = db.Column(db.String(255), nullable=False)
+    unit_cost = db.Column(db.Float, nullable=False)
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'order_id': self.order_id,
+            'name': self.name,
+            'quantity': self.quantity,
+            'type': self.type,
+            'unit_cost': self.unit_cost
+        }
+            
+    

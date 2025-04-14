@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, request
-from models import db,User,Role,Permission,RolePermission,Space,Vendors,FixedAssets, Category, FixedAssetHistory,Request, Inventory, InventoryCategory, InventoryItem,InventoryHistory
+from models import db,User,Role,Permission,RolePermission,Space,Vendors,FixedAssets, Category, FixedAssetHistory,Request, Inventory, InventoryCategory, InventoryItem,InventoryHistory, OrderItem, Orders
 from flask_migrate import Migrate
 from dotenv import load_dotenv
 from flask_cors import CORS
@@ -600,5 +600,26 @@ def get_inventory_item(item_id):
         db.session.delete(item)
         db.session.commit()
         return jsonify({'message': 'Inventory item deleted'}), 200
+    
+    
+@app.route('/orders', methods=['GET', 'POST'])
+def get_orders():
+    if request.method == 'GET':
+        orders = Orders.query.all()
+        return jsonify([order.to_dict() for order in orders]), 200
+    if request.method == 'POST':
+        data = request.get_json()
+        name = data.get('name')
+        description = data.get('description')
+        quantity = data.get('quantity')
+        vendor_id = data.get('vendor_id')
+        user_id = data.get('user_id')
+        order = Orders(name=name, description=description, quantity=quantity, vendor_id=vendor_id, user_id=user_id)
+        db.session.add(order)
+        db.session.commit()
+        return jsonify({"message": "Order created successfully"}), 201    
+
+
+
 if __name__ == '__main__':
     app.run(debug=True) 

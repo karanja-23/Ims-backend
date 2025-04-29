@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, request
-from models import db,User,Role,Permission,RolePermission,Space,Vendors,FixedAssets, Category, FixedAssetHistory,Request, Inventory, InventoryCategory, InventoryItem,InventoryHistory, OrderItem, Orders
+from models import db,User,Role,Permission,RolePermission,Space,Vendors,FixedAssets, Category, FixedAssetHistory,Request, Inventory, InventoryCategory, InventoryItem,InventoryHistory, OrderItem, Orders, Documents
 from flask_migrate import Migrate
 from dotenv import load_dotenv
 from flask_cors import CORS
@@ -620,6 +620,20 @@ def get_orders():
         return jsonify({"message": "Order created successfully"}), 201    
 
 
-
+@app.route('/documents', methods=['GET', 'POST'])
+def get_documents():
+    if request.method == 'GET':
+        documents = Documents.query.all()
+        return jsonify([document.to_dict() for document in documents]), 200
+    if request.method == 'POST':
+        data = request.get_json()
+        name = data.get('name')
+        document = data.get('document')
+        type = data.get('type')
+        description = data.get('description')
+        document = Documents(name=name, description=description, document=document, type=type)
+        db.session.add(document)
+        db.session.commit()
+        return jsonify({"message": "Document created successfully"}), 201
 if __name__ == '__main__':
     app.run(debug=True) 

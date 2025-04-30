@@ -5,6 +5,7 @@ db = SQLAlchemy()
 import datetime
 from datetime import date
 from datetime import datetime 
+import base64
 
 class User(db.Model, SerializerMixin):
     __tablename__ = 'users'
@@ -415,5 +416,6 @@ class Documents(db.Model, SerializerMixin):
             'name': self.name,
             'type': self.type,
             'date_created': self.date_created.isoformat(),
-            'description': self.description
+            'description': self.description,
+            'document': base64.b64encode(self.document).decode('utf-8')
         }
